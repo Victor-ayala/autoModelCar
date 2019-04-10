@@ -12,7 +12,7 @@ bridge = CvBridge()
 
 class laneDetector :
     def __init__(self):
-        rospy.Subscriber("/bebop/image_raw", Image, self.image_callback)
+        rospy.Subscriber("app/camera/color/image_raw/compressed", Image, self.image_callback)
 
     def image_callback(self, msg):
         try:
@@ -29,7 +29,7 @@ class laneDetector :
         ##-----------------------------
         reverse = True
         crop = True
-        fraction = 0.8
+        fraction = 0.5
         
         im_in = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
         width = int(im_in.shape[1])
