@@ -75,11 +75,11 @@ def checkSlope(centroids, kpts, rangem):
     for i in range(1, len(x)):
         slope = float(float(y[i] - y[i - 1])/float(x[i] - x[i - 1]))
         m.append(slope)
-    print len(centroids)
+    # print len(centroids)
     poplist = []
     for i in reversed(range(1, len(centroids) - 1)):
-        print i
-        print abs(m[i] - m[0])
+        # print i
+        # print abs(m[i] - m[0])
         if abs(m[i] - m[0]) > rangem :
 #            print "pop"
             poplist.append(i + 1)
