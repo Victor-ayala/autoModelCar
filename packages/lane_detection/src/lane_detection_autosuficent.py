@@ -102,10 +102,7 @@ class laneDetector :
             curv_img[:, i] = 0
             left_img[:, wo2 + i] = 0
 
-
         #cv2.imshow("Cropped image", cropped_image)
-
-        pixels = int(img.shape[1]*img.shape[0])
         h_img = int(img.shape[0])
 	
 
@@ -137,7 +134,7 @@ class laneDetector :
         for x in contoursc:
             rect = cv2.minAreaRect(x)
         #    rectc.append(rect)
-            print(rect[2])
+#            print(rect[2])
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             if Draw:
@@ -398,41 +395,70 @@ class laneDetector :
             # centroids = []
             # for x in dashedline:
             #     centroids.append((int(x.pt[0]), int(x.pt[1])))
-            pd = (centroids[0][0], centroids[0][1])
+#            pd = (centroids[0][0], centroids[0][1])
+#
+#            center = (pd[0] + 250, pd[1])
+#            if Draw:
+#                for i in centroids:
+#                    if not flip:
+#                        cv2.circle(img, (i[0], i[1]), 8, (0, 255, 189), 3)
+#                    else:
+#                        cv2.circle(img, (width - i[0], i[1]), 8, (0, 255, 189), 3)
+#                if not flip:
+#                    cv2.circle(img, pd, 10, (200, 200, 0), 4)
+#                    cv2.circle(img, center, 10, (200, 200, 0), 4)
+#                ## !
+#                else:
+#                    cv2.circle(img, (width - pd[0], pd[1]), 10, (200, 200, 0), 4)
+#                    cv2.circle(img, (width - center[0], center[1]), 10, (200, 200, 0), 4)
+#
+#            ## Controller
+#
+#            k = float(w_lane/550)      # Conversion from pixels to cm
+#            d = kv*(height - center[1])                 # cm    from bottom to calculated point
+#
+#            error = k*(center[0] - pcar[0])
+#            angle = np.arctan2(error, d_offset + d)*(180/np.pi)
+#            if angle > theta_m:
+#                angle = theta_m
+#            if angle < -theta_m:
+#                angle = -theta_m
+#            if flip:
+#                angle = -angle
+#
+#            ## Conversion to int steering value
+#            steer_range = 170                   # 5 - 175
+#            theta_range = 60                    # -30 - 30
+#            steer = int((steer_range/theta_range * angle + 90))
+            
+            ## Act as we only have continuous line
+            if len(cont) > 0:
+                cont = sorted(cont, key = operator.itemgetter(1), reverse = True)
+                pc = cont[0]
+                ycenter = pc[1]
+                xcenter = pc[0] - 275
+                center = (int(xcenter), int(ycenter))
 
-            center = (pd[0] + 250, pd[1])
-            if Draw:
-                for i in centroids:
-                    if not flip:
-                        cv2.circle(img, (i[0], i[1]), 8, (0, 255, 189), 3)
-                    else:
-                        cv2.circle(img, (width - i[0], i[1]), 8, (0, 255, 189), 3)
-                if not flip:
-                    cv2.circle(img, pd, 10, (200, 200, 0), 4)
-                    cv2.circle(img, center, 10, (200, 200, 0), 4)
-                ## !
-                else:
-                    cv2.circle(img, (width - pd[0], pd[1]), 10, (200, 200, 0), 4)
-                    cv2.circle(img, (width - center[0], center[1]), 10, (200, 200, 0), 4)
+                ## Controller
+                k = float(w_lane/550)                       # Conversion from pixels to cm
+                d = kv*(height - center[1])                 # cm    from bottom to calculated point
 
-            ## Controller
+                error = k*(center[0] - pcar[0])
+                angle = np.arctan2(error , d + d_offset)*(180/np.pi)
+                if angle > theta_m:
+                    angle = theta_m
+                if angle < -theta_m:
+                    angle = -theta_m
+                if flip:
+                    angle = -angle
 
-            k = float(w_lane/550)      # Conversion from pixels to cm
-            d = kv*(height - center[1])                 # cm    from bottom to calculated point
-
-            error = k*(center[0] - pcar[0])
-            angle = np.arctan2(error, d_offset + d)*(180/np.pi)
-            if angle > theta_m:
-                angle = theta_m
-            if angle < -theta_m:
-                angle = -theta_m
-            if flip:
-                angle = -angle
-
-            ## Conversion to int steering value
-            steer_range = 170                   # 5 - 175
-            theta_range = 60                    # -30 - 30
-            steer = int((steer_range/theta_range * angle + 90))
+                ## Conversion to int steering value
+                steer_range = 170                   # 5 - 175
+                theta_range = 60                    # -30 - 30
+                steer = int((steer_range/theta_range * angle + 90))
+                if Draw:
+                    cv2.circle(img, (center[0], center[1]), 10, (200, 200, 0), 4)
+                    
             self.speed = speed_
 
         if curve:
@@ -479,6 +505,7 @@ class laneDetector :
         #
         #     self.pcross = cross
         #     self.speed = speed_
+        
         if Draw:
             cv2.circle(img, (pcar[0], pcar[1]), 10, (250, 100, 0), 4)
             #cv2.imshow("L image", left_img)
