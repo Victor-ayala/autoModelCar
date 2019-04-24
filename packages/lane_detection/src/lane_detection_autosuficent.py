@@ -52,7 +52,7 @@ class laneDetector :
         if flag == -1:
             self.active == False
 
-    def laneDetection(self, image, reverse = False, flip = False, crop = True, Draw = False, fraction = 0.7, active = True):
+    def laneDetection(self, image, reverse = False, flip = False, crop = True, Draw = False, fraction = 0.6, active = True):
         ##-----------------------------
 
         im_in = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -109,67 +109,64 @@ class laneDetector :
         h_img = int(img.shape[0])
 	
 
-	## Dashed line
-        _, contoursd, _ = cv2.findContours(left_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        xd, yd, centroids, contoursd = my.obtainCentroid(contoursd, minArea = 20, maxArea = 6500)
-
-        rectd = []
-        for x in contoursd:
+    	## Dashed line
+        _, contours, _ = cv2.findContours(left_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        
+        #rectd = []
+        contoursd = []
+        for x in contours:
             rect = cv2.minAreaRect(x)
-            print#
-            rectd.append(rect)
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            if Draw:
-                cv2.drawContours(img, [box], 0, (255, 100, 0), 5)
-	l_dashedline = len(centroids)
-
-
+        #    print(rect[2])
+            if abs(rect[2]) > 35 and abs(rect[2]) < 45:
+                contoursd.append(x)
+        #        rectd.append(rect)
+                box = cv2.boxPoints(rect)
+                box = np.int0(box)
+                if Draw:
+                    cv2.drawContours(img, [box], 0, (255, 100, 0), 5)
+        xd, yd, centroids, contoursd = my.obtainCentroid(contoursd, minArea = 20, maxArea = 6500)
+        l_dashedline = len(centroids)
+        
+        
         ## Continuous line
         _, contoursc, _ = cv2.findContours(right_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         xc, yc, cont, contoursc = my.obtainCentroid(contoursc, minArea = 200, maxArea = 90000)
-
+        
         curve = False
-        rectc = []
+        #rectc = []
         for x in contoursc:
             rect = cv2.minAreaRect(x)
-            rectc.append(rect)
-            print rect[2]
+        #    rectc.append(rect)
+            print(rect[2])
             box = cv2.boxPoints(rect)
             box = np.int0(box)
             if Draw:
                 cv2.drawContours(img, [box], 0, (0, 100, 255), 5)
             if abs(rect[2]) > 45 and l_dashedline < 1:
                 curve = True
-
-
-        ## Horizontal line
-        _, contoursh, _ = cv2.findContours(cropped_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        xd, yd, horiz, contoursh = my.obtainCentroid(contoursh, minArea = 8000, maxArea = 15000)
-        cross = False
-
-        recth = []
-        for x in contoursh:
-            rect = cv2.minAreaRect(x)
-            print rect[2]
-
-            if abs(rect[2] % 90) < 5 and abs(rect[2] % 90) > 1 and 0:
-                cross = True
-                recth.append(rect)
-                box = cv2.boxPoints(rect)
-                box = np.int0(box)
-                if Draw:
-                    cv2.drawContours(img, [box], 0, (100, 255, 100), 5)
-
-        #---------------------------------------
-
-
-
         l_contline = len(cont)
         
-        l_horizline = len(horiz)
-
-        pcar = (width/2, int(height/2))
+        ## Horizontal line
+#        _, contoursh, _ = cv2.findContours(cropped_image, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#        xd, yd, horiz, contoursh = my.obtainCentroid(contoursh, minArea = 8000, maxArea = 15000)
+#        cross = False
+#        
+#        #recth = []
+#        for x in contoursh:
+#            rect = cv2.minAreaRect(x)
+#        #    print(rect[2])
+#            if abs(rect[2] % 90) < 5 and abs(rect[2] % 90) > 1:
+#                cross = True
+#        #        recth.append(rect)
+#                box = cv2.boxPoints(rect)
+#                box = np.int0(box)
+#                if Draw:
+#                    cv2.drawContours(img, [box], 0, (100, 255, 100), 5)
+#        l_horizline = len(horiz)
+        
+        #---------------------------------------
+        
+        pcar = (int(width/2), int(height/2))
 
         steer = 90
         angle = 0
@@ -223,7 +220,6 @@ class laneDetector :
                     cv2.circle(img, (pc[0], pc[1]), 10, (250, 100, 0), 4)
                     cv2.circle(img, (pd[0], pd[1]), 10, (250, 100, 0), 4)
                     cv2.circle(img, center, 10, (200, 200, 0), 4)
-                ## !
                 else:
                     cv2.line(img, (width - pi[0], pi[1]), (width - pf[0], pf[1]), (0, 200, 200), thickness=4)
                     cv2.line(img, (width - pd[0], pd[1]), (width - pc[0], pc[1]), (250, 200, 0), thickness=4)
