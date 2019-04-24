@@ -16,6 +16,8 @@ def obtainCentroid(contours, minArea = 0, maxArea = 1000000):
     x = []
     y = []
     centroids = []
+    poplist = []
+    cont = 0
     for i in contours:
 
         area = cv2.contourArea(i)
@@ -26,8 +28,14 @@ def obtainCentroid(contours, minArea = 0, maxArea = 1000000):
             cy = int(M['m01']/M['m00'])
             y.append(cy)
             centroids.append([cx, cy])
-    return x, y, centroids
-#blob
+        else:
+            poplist.append(cont)
+        cont += 1
+
+    for pop in reversed(poplist):
+        contours.pop(pop)
+
+    return x, y, centroids, contours
 
 def linearRegression(x, y):
     x = np.array(x, dtype=np.float64)
@@ -63,7 +71,7 @@ def obtainLaneCenter(p0, p1):
 
     return x_l, y_l
 
-def checkSlope(centroids, kpts, rangem):
+def checkSlope(centroids, rangem):
     centroids = sorted(centroids, key = operator.itemgetter(1), reverse = True)
     x = []
     y = []
@@ -89,9 +97,9 @@ def checkSlope(centroids, kpts, rangem):
         centroids.pop(i)
         x.pop(i)
         y.pop(i)
-        kpts.pop(i)
+        #kpts.pop(i)
 
-    return x, y, centroids, kpts
+    return x, y, centroids
 
 
 

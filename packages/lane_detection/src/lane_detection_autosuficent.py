@@ -13,8 +13,8 @@ class laneDetector :
     def __init__(self):
         rospy.Subscriber("/manual_control/obstacle", Int16, self.obstCallback)
         rospy.Subscriber("/app/camera/color/image_raw/compressed", CompressedImage, self.imageCallback)
-        #self.steer_pub = rospy.Publisher('/manual_control/steering', Int16, queue_size=1)
-        self.steer_pub = rospy.Publisher('/manual_control/desired_angle', Int16, queue_size=1)
+        self.steer_pub = rospy.Publisher('/manual_control/steering', Int16, queue_size=1)
+        #self.steer_pub = rospy.Publisher('/manual_control/desired_angle', Int16, queue_size=1)
         self.speed_pub = rospy.Publisher('/manual_control/speed', Int16, queue_size=1)
         self.steer_16 = Int16()
         self.speed_16 = Int16()
@@ -52,7 +52,7 @@ class laneDetector :
         if flag == -1:
             self.active == False
 
-    def laneDetection(self, image, reverse = False, flip = False, crop = True, Draw = False, fraction = 0.5, active = True):
+    def laneDetection(self, image, reverse = False, flip = False, crop = True, Draw = False, fraction = 0.7, active = True):
         ##-----------------------------
 
         im_in = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
@@ -69,7 +69,7 @@ class laneDetector :
 
         #im_in = cv2.bilateralFilter(im_in, 15, 55, 55)
         im_in = cv2.GaussianBlur(im_in, (7, 7), 0)
-        _, im_in = cv2.threshold(im_in, 160, 255, cv2.THRESH_TOZERO)
+        _, im_in = cv2.threshold(im_in, 200, 255, cv2.THRESH_TOZERO)
         kernel = np.ones((6, 6), np.uint8)
         im_in = cv2. morphologyEx(im_in, cv2.MORPH_CLOSE, kernel, iterations = 1)
 
@@ -98,43 +98,20 @@ class laneDetector :
         wo2 = width/2
 
         for i in range(width/2):
-            right_img[:, i] = 1
-            curv_img[:, i] = 1
-            left_img[:, wo2 + i] = 1
+            right_img[:, i] = 0
+            curv_img[:, i] = 0
+            left_img[:, wo2 + i] = 0
 
 
         #cv2.imshow("Cropped image", cropped_image)
 
         pixels = int(img.shape[1]*img.shape[0])
         h_img = int(img.shape[0])
+	
 
-        ## Continuous line
-        _, contoursc, _ = cv2.findContours(right_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        xc, yc, cont, contoursc = my.obtainCentroid(contoursc, minArea = 200, maxArea = 8000)
-        # contoursc = sorted(contoursc, key = cv2.A, reverse=True)
-        # rect = cv2.minAreaRect(contoursc[0])
-        # if abs(rect[2]) > 50:
-        #     curve = True
-
-        curve = False
-        rectc = []
-        for x in contoursc:
-            rect = cv2.minAreaRect(x)
-            rectc.append(rect)
-            #print rect[2]
-            box = cv2.boxPoints(rect)
-            box = np.int0(box)
-            if Draw:
-                cv2.drawContours(img, [box], 0, (0, 100, 255), 5)
-            if abs(rect[2]) > 50:
-                curve = True
-
-
-
-        ## Dashed line
+	## Dashed line
         _, contoursd, _ = cv2.findContours(left_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         xd, yd, centroids, contoursd = my.obtainCentroid(contoursd, minArea = 20, maxArea = 6500)
-
 
         rectd = []
         for x in contoursd:
@@ -145,7 +122,25 @@ class laneDetector :
             box = np.int0(box)
             if Draw:
                 cv2.drawContours(img, [box], 0, (255, 100, 0), 5)
+	l_dashedline = len(centroids)
 
+
+        ## Continuous line
+        _, contoursc, _ = cv2.findContours(right_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        xc, yc, cont, contoursc = my.obtainCentroid(contoursc, minArea = 200, maxArea = 90000)
+
+        curve = False
+        rectc = []
+        for x in contoursc:
+            rect = cv2.minAreaRect(x)
+            rectc.append(rect)
+            print rect[2]
+            box = cv2.boxPoints(rect)
+            box = np.int0(box)
+            if Draw:
+                cv2.drawContours(img, [box], 0, (0, 100, 255), 5)
+            if abs(rect[2]) > 45 and l_dashedline < 1:
+                curve = True
 
 
         ## Horizontal line
@@ -158,7 +153,7 @@ class laneDetector :
             rect = cv2.minAreaRect(x)
             print rect[2]
 
-            if abs(rect[2] % 90) < 5 and abs(rect[2] % 90) > 1:
+            if abs(rect[2] % 90) < 5 and abs(rect[2] % 90) > 1 and 0:
                 cross = True
                 recth.append(rect)
                 box = cv2.boxPoints(rect)
@@ -171,7 +166,7 @@ class laneDetector :
 
 
         l_contline = len(cont)
-        l_dashedline = len(centroids)
+        
         l_horizline = len(horiz)
 
         pcar = (width/2, int(height/2))
@@ -179,8 +174,8 @@ class laneDetector :
         steer = 90
         angle = 0
         self.speed = 0
-        speed_ = 150
-        speedc_ = 120
+        speed_ = -150
+        speedc_ = -120
 
         ## Controller parameters
         theta_m = 30                                # deg   min/max value
@@ -446,9 +441,9 @@ class laneDetector :
 
         if curve:
             if not flip:
-                steer = 50
+                steer = 55
             else:
-                steer = 130
+                steer = 125
             self.speed = speedc_
 
         ## If we are in a crosslane
@@ -490,10 +485,10 @@ class laneDetector :
         #     self.speed = speed_
         if Draw:
             cv2.circle(img, (pcar[0], pcar[1]), 10, (250, 100, 0), 4)
-        #cv2.imshow("L image", left_img)
-        #cv2.imshow("R image", right_img)
-        #cv2.imshow("Curv image", curv_img)
-        cv2.imshow("H image", cropped_image)
+            #cv2.imshow("L image", left_img)
+            #cv2.imshow("R image", right_img)
+            #cv2.imshow("Curv image", curv_img)
+            cv2.imshow("H image", cropped_image)
 
         return img, steer, angle
 
