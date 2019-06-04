@@ -1,0 +1,5 @@
+# Car orientation
+rostopic pub /manual_control/steering std_msgs/Int16 "data: 90"
+ 
+# Car speed
+rostopic pub /manual_control/speed std_msgs/Int16 "data: 100"

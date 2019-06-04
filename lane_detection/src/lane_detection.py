@@ -25,22 +25,22 @@ class laneDetector :
         self.active = True
         self.crosscont = 0
         self.pcross = False
+        self.show = True
 
     def imageCallback(self, msg):
         np_arr = np.fromstring(msg.data, np.uint8)
         self.cv2_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-        lane_img, self.steer_16.data, angle = self.laneDetection(self.cv2_img, reverse = False, flip = self.Flip, active = self.active, Draw = False)
-        #lane_img, _, _ = self.laneDetection(self.cv2_img, reverse = True, flip = False)
-        #lane_img = self.cv2_img
+        ### !!! Main call
+        lane_img, self.steer_16.data, angle = self.laneDetection(self.cv2_img, reverse = True, flip = self.Flip, active = self.active, Draw = True)
         self.speed_16.data = self.speed
         self.steer_pub.publish(self.steer_16)
         self.speed_pub.publish(self.speed_16)
-        #cv2.imshow("Lane", self.cv2_img)
-        #cv2.waitKey(1)
+        if self.show:
+			cv2.imshow("Lane", self.cv2_img)
+			cv2.waitKey(1)
         print("steer = " + str(self.steer_16.data))
         print("angle = " + str(angle))
-        # print self.Flip
-
+	
     def obstCallback(self, msg):
         flag = 0
         flag = msg.data
@@ -65,17 +65,14 @@ class laneDetector :
 
         if reverse:
             im_in = cv2.bitwise_not(im_in)
-        #    cv2.imshow("Not image0", im_in)
 
         #im_in = cv2.bilateralFilter(im_in, 15, 55, 55)
-#        im_in = cv2.GaussianBlur(im_in, (7, 7), 0)
-        _, im_in = cv2.threshold(im_in, 200, 255, cv2.THRESH_TOZERO)
+        #im_in = cv2.GaussianBlur(im_in, (7, 7), 0)
+        _, im_in = cv2.threshold(im_in, 160, 255, cv2.THRESH_TOZERO)
         kernel = np.ones((6, 6), np.uint8)
         im_in = cv2. morphologyEx(im_in, cv2.MORPH_CLOSE, kernel, iterations = 1)
 
         #im_in = cv2.adaptiveThreshold(im_in, 250, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-
-        #cv2.imshow("im_in", im_in)
 
         # cropping image
         if crop:
@@ -102,7 +99,8 @@ class laneDetector :
             curv_img[:, i] = 0
             left_img[:, wo2 + i] = 0
 
-        #cv2.imshow("Cropped image", cropped_image)
+        cv2.imshow("Cropped image", cropped_image)
+        # New image height
         h_img = int(img.shape[0])
 	
 
@@ -116,7 +114,6 @@ class laneDetector :
         #    print(rect[2])
             if abs(rect[2]) > 35 and abs(rect[2]) < 45:
                 contoursd.append(x)
-        #        rectd.append(rect)
                 box = cv2.boxPoints(rect)
                 box = np.int0(box)
                 if Draw:
@@ -130,7 +127,6 @@ class laneDetector :
         xc, yc, cont, contoursc = my.obtainCentroid(contoursc, minArea = 200, maxArea = 90000)
         
         curve = False
-        #rectc = []
         for x in contoursc:
             rect = cv2.minAreaRect(x)
         #    rectc.append(rect)
