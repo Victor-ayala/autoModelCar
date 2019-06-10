@@ -5,7 +5,7 @@
   <rosparam file="$(find joy2car)/config/params.yaml" command="load" />
 
   <node respawn="false" pkg="joy" type="joy_node" name="car_joy">
-	<param name="autorepeat_rate" value="10.0"/>
+	<param name="autorepeat_rate" value="10.0"/>		<!-- 10 hz frequency-->
   </node>
         
   <node name="joy2car" pkg="joy2car" type="joy2car.py" output="screen"/>

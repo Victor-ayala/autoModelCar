@@ -9,6 +9,7 @@ from std_msgs.msg import String
 
 angle_max = rospy.get_param("/autoModelCar/max_angle")
 speed_max = rospy.get_param("/autoModelCar/max_speed")
+speed_offset = rospy.get_param("/autoModelCar/speed_offset")
 rv_offset = rospy.get_param("/autoModelCar/reverse_offset")
 rv_speed = rospy.get_param("/autoModelCar/reverse_speed")
 
@@ -43,13 +44,18 @@ class joystick:
 		# Angle value
 		self.steer.data = 90 - angle_max*msg.axes[0]
 		
-		# Assign speed and steer values from joystick
+		# Accelerate
 		if msg.buttons[7] > 0:
-			if msg.buttons[6] == 0 and speed >= 0:
-				speed += self.kspeed
-			else:
-				speed = 0
-		
+			if msg.buttons[6] == 0:
+				# Start at offset speed value
+				if speed >= 0 and speed < speed_offset:
+					speed = speed_offset
+				elif speed >= speed_offset:
+					speed += self.kspeed
+				else:
+					speed += self.kbreak
+				
+		# Break
 		if msg.buttons[6] > 0:
 			speed -= self.kbreak
 		
@@ -67,7 +73,8 @@ class joystick:
 
 		# Lights commands
 		if msg.buttons[7] == 1:
-			rospy.loginfo("forward")
+			if speed > speed_offset:
+				rospy.loginfo("forward")
 		if msg.buttons[6] == 1:
 			if speed < 0:
 				rospy.loginfo("backward")
@@ -105,10 +112,12 @@ class joystick:
 
 
 if __name__ == '__main__':
+	rate = rospy.get_param("/rate")
+	
 	rospy.init_node('joy2car')
 	rospy.loginfo("Init joystick to autoModelCar")
 	j = joystick()
-	r = rospy.Rate(10)
+	r = rospy.Rate(rate)
 	try:
 		rospy.spin()
 		r.sleep()
