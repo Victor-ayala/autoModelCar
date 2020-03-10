@@ -12,11 +12,11 @@ import myLibrary as my
 class laneDetector :
     def __init__(self):
 #        rospy.Subscriber("/manual_control/obstacle", Int16, self.obstCallback)
-        rospy.Subscriber("/app/camera/color/image_raw/compressed", CompressedImage, self.imageCallback)
+        rospy.Subscriber("/app/camera/rgb/image_raw/compressed", CompressedImage, self.imageCallback)
 #        self.steer_pub = rospy.Publisher('/manual_control/steering', Int16, queue_size=1)
-        self.steer_pub = rospy.Publisher('/manual_control/desired_angle', Int16, queue_size=1)
+        self.steer_pub = rospy.Publisher('/manual_control/cmd_steer', Int16, queue_size=1)
 #        self.speed_pub = rospy.Publisher('/manual_control/speed', Int16, queue_size=1)
-        self.speed_pub = rospy.Publisher('/manual_control/desired_speed', Int16, queue_size=1)
+        self.speed_pub = rospy.Publisher('/manual_control/cmd_speed', Int16, queue_size=1)
         self.steer_16 = Int16()
         self.speed_16 = Int16()
         self.speed_16.data = 0
@@ -31,7 +31,7 @@ class laneDetector :
         np_arr = np.fromstring(msg.data, np.uint8)
         self.cv2_img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
         ### !!! Main call
-        lane_img, self.steer_16.data, angle = self.laneDetection(self.cv2_img, reverse = True, flip = self.Flip, active = self.active, Draw = True)
+        lane_img, self.steer_16.data, angle = self.laneDetection(self.cv2_img, reverse = False, flip = self.Flip, active = self.active, Draw = True)
         self.speed_16.data = self.speed
         self.steer_pub.publish(self.steer_16)
         self.speed_pub.publish(self.speed_16)
