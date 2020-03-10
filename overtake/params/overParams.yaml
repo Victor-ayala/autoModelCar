@@ -1,0 +1,4 @@
+autoModelCar:
+  overtake:
+    front_dist: 0.5
+    right_dist: 0.25 

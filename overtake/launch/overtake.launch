@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <include file="$(find obst_detection)/launch/obstacle_detector.launch" />
+
+  <node name="overtake" pkg="overtake" type="overtake.py" output="screen"/>
+  <!--<rosparam file="$(find overtake)/config/markers_sim.yaml" command="load" /> -->
+
+  <!-- <node name="car_motion" pkg="move_car" type="moveCar.py" output="screen"/> -->
+  
+</launch>
