@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+
+<launch>
+  <rosparam file="$(find obst_detection)/params/obstParams.yaml" command="load" />
+  <node name="obstacle_detector" pkg="obst_detection" type="obstDetection.py" />
+
+</launch>

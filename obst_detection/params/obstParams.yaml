@@ -1,0 +1,12 @@
+autoModelCar:
+  obstDetector:
+    MINA_FRONT: 340 
+    MINA_LEFT: 70
+    MINA_REAR: 160
+    MINA_RIGHT: 250
+    ANGLE_AP: 40
+    
+    MIND_FRONT: 0.5 # meters
+    MIND_LEFT: 0.35
+    MIND_REAR: 0.26
+    MIND_RIGHT: 0.40
