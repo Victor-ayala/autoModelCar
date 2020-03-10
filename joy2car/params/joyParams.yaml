@@ -1,0 +1,14 @@
+autoModelCar:
+    joy2car:
+      kspeed: 10
+      kbreak: 20
+      kspeedrv: 8
+      kidle: 5
+
+      max_speed: 300
+      max_speed_rv: -250
+      max_angle: 80 # + 90
+      reverse_offset: -100
+      speed_offset: 100
+      rate: 10
+

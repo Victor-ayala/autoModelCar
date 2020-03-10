@@ -2,14 +2,21 @@
 
 <launch>
 
-  <rosparam file="$(find joy2car)/config/params.yaml" command="load" />
+  <arg name="manual" default="true"/>
+  <param name="/autoModelCar/joy2car/manual_control" value="$(arg manual)"/>
+
+  <rosparam file="$(find joy2car)/params/joyParams.yaml" command="load" />
 
   <node respawn="false" pkg="joy" type="joy_node" name="car_joy">
 	<param name="autorepeat_rate" value="10.0"/>		<!-- 10 hz frequency-->
   </node>
         
   <node name="joy2car" pkg="joy2car" type="joy2car.py" output="screen"/>
-  
-  
 
+  <!--
+  <group if="$(arg manual)">
+    <node pkg="move_car" type="moveCar.py" name="car_motion">
+  </group>
+  -->
+  
 </launch>
