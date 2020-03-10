@@ -58,7 +58,7 @@ autoModelCar::autoModelCar():nh("~")
 
 	// Time variables intialization
 	ptime = ros::Time::now();
-  	ctime = ros::Time::now();
+  ctime = ros::Time::now();
 	ptime = ctime;
 
 	speed = 0;
